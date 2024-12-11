@@ -1,12 +1,13 @@
  package com.example.api;
 
- import java.util.List;
-
+ import android.content.Intent;
  import android.os.Bundle;
+ import android.util.Log;
+ import android.widget.Adapter;
  import android.widget.Button;
  import android.widget.EditText;
- import android.widget.LinearLayout;
  import android.widget.ListView;
+ import android.widget.Toast;
 
  import androidx.activity.EdgeToEdge;
  import androidx.appcompat.app.AppCompatActivity;
@@ -14,24 +15,16 @@
  import androidx.core.view.ViewCompat;
  import androidx.core.view.WindowInsetsCompat;
 
- import retrofit2.Call;
- import retrofit2.Callback;
- import retrofit2.Response;
- import retrofit2.Retrofit;
+ import java.util.ArrayList;
+ import java.util.List;
 
  public class MainActivity extends AppCompatActivity {
 
-     private EditText firstNameEditText;
-     private EditText lastNameEditText;
-     private EditText emailEditText;
-     private EditText phoneEditText;
-     private EditText ageEditText;
-     private Button cancelButton;
+     private EditText name, category, price, count;
      private Button addButton;
-     private Button showAddFormButton;
-     private LinearLayout formLinearLayout;
-     private ListView peopleListView;
-     private List<Telephones> peopleList;
+     private ListView listView;
+     private List<Telephones> itemList;
+     private ListAdapter adapter;
 
 
     @Override
@@ -47,62 +40,53 @@
         initialize();
     }
      private void initialize(){
-         name = findViewById(R.id.name);
-         author = findViewById(R.id.author);
-         page = findViewById(R.id.page);
+         name = findViewById(R.id.Name);
+         category = findViewById(R.id.Kategori);
+         count = findViewById(R.id.Count);
+         price = findViewById(R.id.Price);
          addButton = findViewById(R.id.addbutton);
          listView = findViewById(R.id.listView);
          itemList = new ArrayList<>();
-         adapter = new MyAdapter(this, itemList);
+         adapter = new ListAdapter(this, itemList);
          listView.setAdapter(adapter);
 
-         listView.setOnItemClickListener((parent, view, position, id) -> {
-             Konyv item = itemList.get(position);
-
-             Intent intent = new Intent(MainActivity.this, ItemDetailActivity.class);
-
-             intent.putExtra("itemName", item.getName());
-             intent.putExtra("itemAuthor", item.getAuthor());
-             intent.putExtra("itemPage", item.getPage());
-
-             startActivity(intent);
+         listView.setOnItemLongClickListener((parent, view, position, id) -> {
+             Telephones item = itemList.get(position);
+             itemList.remove(position);
+             adapter.notifyDataSetChanged();
+             Toast.makeText(this, item.getName() + " deleted", Toast.LENGTH_SHORT).show();
+             return true;
          });
 
          addButton.setOnClickListener( e -> {
              String nameToList = name.getText().toString();
-             String authorToList = author.getText().toString();
-             String pageToList = page.getText().toString();
+             String CoutToList = count.getText().toString();
+             String PriceToList = price.getText().toString();
+             String categoryToList = category.getText().toString();
 
-             if (nameToList.isEmpty() || authorToList.isEmpty()) {
+             if (nameToList.isEmpty() || categoryToList.isEmpty()) {
                  Toast.makeText(this, "Töltsd ki az összes bemenetet", Toast.LENGTH_SHORT).show();
                  return;
              }
 
              int countToList;
+             int priceToList;
              try {
-                 countToList = Integer.parseInt(pageToList);
-                 if(countToList < 50) {
-                     Toast.makeText(this, "Az oldal legyen több mint 50", Toast.LENGTH_SHORT).show();
-                     return;
-                 }
-
-
+                 countToList = Integer.parseInt(CoutToList);
+                 priceToList = Integer.parseInt(PriceToList);
              } catch (NumberFormatException ex) {
                  Toast.makeText(this, "Hibás számbemenet", Toast.LENGTH_SHORT).show();
                  return;
              }
 
-             Konyv item = new Konyv(nameToList, authorToList, countToList);
+             Telephones item = new Telephones(nameToList, countToList, priceToList, categoryToList);
              itemList.add(item);
              adapter.notifyDataSetChanged();
 
              name.setText("");
-             author.setText("");
-             page.setText("");
+             price.setText("");
+             count.setText("");
+             category.setText("");
          });
-     }
-     public void deleteListElement(Konyv data){
-         itemList.remove(data);
-         adapter.notifyDataSetChanged();
      }
 }
